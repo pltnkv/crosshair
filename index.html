@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        button {
+            width: 50px;
+            height: 50px;
+            margin: 5px 5px 5px 0;
+        }
+
+        input {
+            height: 50px;
+            margin: 5px 5px 5px 0;
+        }
+
+    </style>
+</head>
+<body>
+<div>
+    <input type='file' id="imgInput"/>
+    <!-- <button>Size</button>
+     <button>Edit</button>
+     <button>Inv</button>
+     <button>Clear</button>-->
+    <!--filter: invert(.8);-->
+</div>
+<div>
+    <canvas style="position: absolute" id="canvas" width="1366" height="785"></canvas>
+    <canvas style="position: absolute" id="canvas2" width="1366" height="785"></canvas>
+    <div style="display:none;">
+        <img id="source">
+    </div>
+    <div id="bg" style="position:absolute; top:846px; height: 50px; width: 150px; line-height: 50px"></div>
+    <input class="copytextarea">
+</div>
+<script src="app.js"></script>
+</body>
+</html>
