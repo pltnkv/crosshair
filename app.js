@@ -1,14 +1,26 @@
 const THRESHOLD = 0.02
 
-let WIDTH
-let HEIGHT
+
 let container = document.getElementById('container-inner')
 let imgInput = document.getElementById('imgInput')
+let clearButton = document.getElementById('clear-button')
+
+let WIDTH
+let HEIGHT
 let ctxOrig
+let savedCrosshairs = []
+
+clearButton.addEventListener('click', clearSavedCrosshairs)
 
 imgInput.addEventListener('change', (e) => {
+	container.innerHTML = ''
+	clearSavedCrosshairs()
 	readURL(imgInput)
 })
+
+function clearSavedCrosshairs() {
+	savedCrosshairs = []
+}
 
 function readURL(input) {
 	if (input.files && input.files[0]) {
@@ -32,6 +44,7 @@ function getOnImageLoad(image) {
 		ctxOrig.imageSmoothingEnabled = false
 		ctxOrig.drawImage(image, 0, 0)
 		// ctxOrig.drawImage(image, 0, 0, WIDTH * 3, HEIGHT * 3)
+		clearButton.style.visibility = 'visible'
 		run()
 	}
 }
@@ -50,11 +63,10 @@ function run() {
 
 	let currentX = 0
 	let currentY = 0
-	let savedCrosshairs = []
 
 	let canvas2 = createCanvas(WIDTH, HEIGHT)
 	let ctx = canvas2.getContext('2d')
-	ctx.font = '15px sans-serif'
+	ctx.font = '16px sans-serif'
 
 	function getPixelsUnderPoint(x, y) {
 		let pixel = ctxOrig.getImageData(x, y, 1, 1).data
@@ -66,11 +78,10 @@ function run() {
 	}
 
 	function debugBox() {
-		let color = getPixelsUnderPoint(currentX, currentY)
-		let rgba = 'rgba(' + color.r + ', ' + color.g +
-			', ' + color.b + ', ' + (color.a / 255) + ')'
-		bgDiv.style.background = rgba
-		bgDiv.textContent = rgba
+		let rgbaColor = getPixelsUnderPoint(currentX, currentY)
+		let hexColor = rgbaToHEX(rgbaColor)
+		bgDiv.style.backgroundColor = hexColor
+		bgDiv.textContent = hexColor + (rgbaColor.a === 255 ? '' : ` (${rgbaColor.a / 255})`)
 	}
 
 	function getCrosshair(x, y) {
@@ -143,7 +154,7 @@ function run() {
 		//Draw text
 		ctx.beginPath()
 
-		let text = `${crosshair.x2 - crosshair.x1} ˣ ${crosshair.y2 - crosshair.y1}`
+		let text = `w:${crosshair.x2 - crosshair.x1} h:${crosshair.y2 - crosshair.y1}`
 		ctx.strokeStyle = 'white'
 		ctx.lineWidth = 2
 		ctx.strokeText(text, crosshair.point.x + 10, crosshair.point.y - 10)
@@ -209,12 +220,20 @@ function run() {
 		copyTextarea.select()
 
 		try {
-			let successful = document.execCommand('copy')
-			let msg = successful ? 'successful' : 'unsuccessful'
-			console.log('Copying text command was ' + msg)
+			document.execCommand('copy')
+			showNotification('Color has been copied')
 		} catch (err) {
-			console.log('Oops, unable to copy')
+			showNotification('Oops, unable to copy')
 		}
 	}
 }
 
+function showNotification(text) {
+	let notification = document.createElement('div')
+	notification.classList.add('notification')
+	notification.innerText = text
+	document.body.appendChild(notification)
+	setTimeout(() => {
+		notification.parentNode.removeChild(notification)
+	}, 1000)
+}
