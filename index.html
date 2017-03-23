@@ -24,6 +24,7 @@
         }
 
         button {
+            box-sizing: border-box;
             font-family: 'Open Sans', sans-serif;
             display: inline-block;
             vertical-align: top;
@@ -34,6 +35,14 @@
 
         #clear-button {
             visibility: hidden;
+        }
+
+        #toggle-type-button {
+            visibility: hidden;
+            padding-bottom: 6px;
+            font-size: 28px;
+            line-height: 28px;
+            text-align: center;
         }
 
         #bg {
@@ -70,6 +79,7 @@
 <body>
 <div class="buttons-box">
     <input type='file' id="imgInput"/>
+    <button id="toggle-type-button">❘—⊹</button>
     <button id="clear-button">Clear</button>
     <span id="bg"></span>
 </div>

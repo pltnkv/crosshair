@@ -1,26 +1,24 @@
 const THRESHOLD = 0.02
-
+const VER_SYMBOL = '❘'
+const HOR_SYMBOL = '—'
+const BOTH_SYMBOL = '⊹'
 
 let container = document.getElementById('container-inner')
 let imgInput = document.getElementById('imgInput')
 let clearButton = document.getElementById('clear-button')
+let toggleTypeButton = document.getElementById('toggle-type-button')
 
 let WIDTH
 let HEIGHT
 let ctxOrig
 let savedCrosshairs = []
-
-clearButton.addEventListener('click', clearSavedCrosshairs)
+let crosshairType = BOTH_SYMBOL
 
 imgInput.addEventListener('change', (e) => {
 	container.innerHTML = ''
 	clearSavedCrosshairs()
 	readURL(imgInput)
 })
-
-function clearSavedCrosshairs() {
-	savedCrosshairs = []
-}
 
 function readURL(input) {
 	if (input.files && input.files[0]) {
@@ -45,6 +43,9 @@ function getOnImageLoad(image) {
 		ctxOrig.drawImage(image, 0, 0)
 		// ctxOrig.drawImage(image, 0, 0, WIDTH * 3, HEIGHT * 3)
 		clearButton.style.visibility = 'visible'
+		toggleTypeButton.style.visibility = 'visible'
+		updateToggleTypeButton()
+		addButtonsListeners()
 		run()
 	}
 }
@@ -133,6 +134,7 @@ function run() {
 		y2 = i
 
 		return {
+			type: crosshairType,
 			point: {x, y},
 			x1, x2, y1, y2
 		}
@@ -143,18 +145,33 @@ function run() {
 		ctx.lineWidth = 1
 		ctx.strokeStyle = 'black'
 		ctx.fillStyle = null
-		ctx.moveTo(crosshair.x1, crosshair.point.y)
-		ctx.lineTo(crosshair.x2, crosshair.point.y)
+		let cType = crosshair.type
+		if (cType === HOR_SYMBOL || cType === BOTH_SYMBOL) {
+			ctx.moveTo(crosshair.x1, crosshair.point.y)
+			ctx.lineTo(crosshair.x2, crosshair.point.y)
+		}
 
-		ctx.moveTo(crosshair.point.x, crosshair.y1)
-		ctx.lineTo(crosshair.point.x, crosshair.y2)
+		if (cType === VER_SYMBOL || cType === BOTH_SYMBOL) {
+			ctx.moveTo(crosshair.point.x, crosshair.y1)
+			ctx.lineTo(crosshair.point.x, crosshair.y2)
+		}
 
 		ctx.stroke()
 
 		//Draw text
 		ctx.beginPath()
-
-		let text = `w:${crosshair.x2 - crosshair.x1} h:${crosshair.y2 - crosshair.y1}`
+		let text
+		switch (cType) {
+			case HOR_SYMBOL:
+				text = `w:${crosshair.x2 - crosshair.x1}`
+				break
+			case VER_SYMBOL:
+				text = `h:${crosshair.y2 - crosshair.y1}`
+				break
+			case BOTH_SYMBOL:
+				text = `w:${crosshair.x2 - crosshair.x1} h:${crosshair.y2 - crosshair.y1}`
+				break
+		}
 		ctx.strokeStyle = 'white'
 		ctx.lineWidth = 2
 		ctx.strokeText(text, crosshair.point.x + 10, crosshair.point.y - 10)
@@ -208,7 +225,7 @@ function run() {
 	function rgbaToHEX(pixel) {
 		function componentToHex(c) {
 			let hex = c.toString(16)
-			return hex.length == 1 ? '0' + hex : hex
+			return hex.length === 1 ? '0' + hex : hex
 		}
 
 		return '#' + componentToHex(pixel.r) + componentToHex(pixel.g) + componentToHex(pixel.b)
@@ -236,4 +253,41 @@ function showNotification(text) {
 	setTimeout(() => {
 		notification.parentNode.removeChild(notification)
 	}, 1000)
+}
+
+////////////////////////////////////////////////////////////
+// BUTTONS EVENT
+////////////////////////////////////////////////////////////
+
+function addButtonsListeners() {
+	document.addEventListener('keyup', (e) => {
+		const SPACE_KEYCODE = 32
+		if (e.keyCode === SPACE_KEYCODE) {
+			toggleCrosshairType()
+			e.preventDefault()
+		}
+	})
+
+	toggleTypeButton.addEventListener('click', toggleCrosshairType)
+	clearButton.addEventListener('click', clearSavedCrosshairs)
+}
+
+const crosshairTypes = [BOTH_SYMBOL, HOR_SYMBOL, VER_SYMBOL]
+
+function toggleCrosshairType() {
+	let index = crosshairTypes.indexOf(crosshairType)
+	if (index === crosshairTypes.length - 1) {
+		crosshairType = crosshairTypes[0]
+	} else {
+		crosshairType = crosshairTypes[index + 1]
+	}
+	updateToggleTypeButton()
+}
+
+function updateToggleTypeButton() {
+	toggleTypeButton.innerText = crosshairType
+}
+
+function clearSavedCrosshairs() {
+	savedCrosshairs = []
 }
